@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  myDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "PHONE_NUMBER_TYPE"
+          AttributeType: "S"
+        -
+          AttributeName: "TIMESTAMP"
+          AttributeType: "N"
+      KeySchema:
+        -
+          AttributeName: "PHONE_NUMBER_TYPE"
+          KeyType: "HASH"
+        - AttributeName: "TIMESTAMP"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: "vanity-phone-numbers"
+  lambdaDynamoDbRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+                Service:
+                  - lambda.amazonaws.com
+            Action:
+                - 'sts:AssumeRole'
+      Path: /service-role/
+      "ManagedPolicyArns": [
+        "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      ]
+      RoleName: LambdaDynamoDbRole
+      Policies:
+        - PolicyName: lambda-dynamo-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'dynamodb:*'
+                Resource: "arn:aws:dynamodb:*:*:table/*"
+  vanityNumberGenerator:
+    Type: AWS::Lambda::Function
+    DependsOn: lambdaDynamoDbRole
+    Properties:
+      Runtime: nodejs12.x
+      FunctionName: vanity-number-generator
+      Role: !GetAtt lambdaDynamoDbRole.Arn
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          var AWS = require('aws-sdk');
+          AWS.config.update({region: 'us-east-1'});
+          var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+
+          exports.handler = function(event, context, callback) {
+
+          var phoneNumber = event['Details']['Parameters']['phoneNumber'];
+
+          const timestamp = + new Date();
+
+          if (typeof phoneNumber == "number"){
+              phoneNumber = phoneNumber.toString();
+          }
+
+          const firstSixDigits = phoneNumber.substr(0, 6);
+          const numberToConvert = phoneNumber.substr(phoneNumber.length - 4).split('');
+
+          const numberLetterMap = {
+              '2': ['a', 'b', 'c'],
+              '3': ['d', 'e', 'f'],
+              '4': ['g', 'h', 'i'],
+              '5': ['j', 'k', 'l'],
+              '6': ['m', 'n', 'o'],
+              '7': ['p', 'q', 'r', 's'],
+              '8': ['t', 'u', 'v'],
+              '9': ['w', 'x', 'y', 'z']
+          };
+
+          const generateVanityNumbers = numberInput => {
+              if(numberInput === "") return [];
+
+              let phoneArray = Array.from(numberInput);
+
+              let concat = (arr, x) => Array(arr.length * x)
+                  .fill()
+                  .map((b, i) => arr[i % arr.length])
+                  .sort((a, b) => a.localeCompare(b));
+
+              let results = Array(numberLetterMap[phoneArray[0]].length)
+                  .fill()
+                  .map((_, i) => numberLetterMap[phoneArray[0]][i]);
+
+              for(let digit = 1; digit < phoneArray.length; digit++) {
+                  let x = numberLetterMap[phoneArray[digit]];
+                  results = concat(results, x.length).map((b, i) => b + x[i % x.length]);
+              }
+
+              return findTopFiveNumbers(results);
+          }
+
+          const findTopFiveNumbers = vanityNumbers => {
+              let filteredCombinations = [];
+              const vowels = ['a', 'e', 'i', 'o', 'u'];
+
+              // Find the best 5 words by looking for vowels
+              for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
+                  if (!vowels.includes(vanityNumbers[i].charAt(0))
+                      && vowels.includes(vanityNumbers[i].charAt(1))
+                      && vowels.includes(vanityNumbers[i].charAt(3))){
+                          filteredCombinations.push(vanityNumbers[i].toUpperCase());
+                  }
+              }
+
+              for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
+                  if (vowels.includes(vanityNumbers[i].charAt(1))
+                      && vowels.includes(vanityNumbers[i].charAt(3))){
+                      filteredCombinations.push(vanityNumbers[i].toUpperCase());
+                  }
+              }
+
+              for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
+                  if (vowels.includes(vanityNumbers[i].charAt(3))){
+                      filteredCombinations.push(vanityNumbers[i].toUpperCase());
+                  }
+              }
+
+              for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
+                      filteredCombinations.push(vanityNumbers[i].toUpperCase());
+              }
+
+              return filteredCombinations;
+          }
+
+          let filteredCombinations = generateVanityNumbers(numberToConvert);
+
+          for (let i = 0; i < filteredCombinations.length; i++) {
+              let fullNumber = firstSixDigits + filteredCombinations[i];
+              filteredCombinations[i] = fullNumber.substr(0,3) + '-' + fullNumber.substr(3, 3) + '-' + fullNumber.substr(6);
+          }
+
+          var params = {
+            TableName: 'vanity-phone-numbers',
+            Item: {
+              'PHONE_NUMBER_TYPE' : {S: "VANITY"},
+              'TIMESTAMP'    : {N: timestamp.toString()},
+              'PHONE_NUMBER' : {S: phoneNumber},
+              'VANITY_NUM_1' : {S: filteredCombinations[0]},
+              'VANITY_NUM_2' : {S: filteredCombinations[1]},
+              'VANITY_NUM_3' : {S: filteredCombinations[2]},
+              'VANITY_NUM_4' : {S: filteredCombinations[3]},
+              'VANITY_NUM_5' : {S: filteredCombinations[4]}
+            }
+          };
+
+
+          ddb.putItem(params, function(err, data) {
+            if (err) {
+              console.log("Error", err);
+            } else {
+              console.log("Success", data);
+            }
+          });
+
+
+          var resultMap = {
+            vanityNumber1: filteredCombinations[0],
+            vanityNumber2: filteredCombinations[1],
+            vanityNumber3: filteredCombinations[2]
+          }
+
+          callback(null, resultMap);
+          }
+      Description: Convert a phone number to a vanity number.
