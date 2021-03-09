@@ -94,8 +94,10 @@ API Gateway GET endpoint.
  
  [Click here to visit the repo](https://github.com/lyaegel88/Lukes-VoiceFoundry-ReactJS-App)
 
-## Architectural Diagram
-![Architectural Diagram](cloudfoundry_diagram.png)
+## Architectural Diagrams
+![CloudFoundry Diagram](cloudfoundry_diagram.png)
+
+![Architectural Diagram](architectural_diagram_2.png)
 
 ## Final Thoughts
 First thing - I learned a lot over the last few days. I feel like an 
