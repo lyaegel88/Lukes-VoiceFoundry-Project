@@ -1,5 +1,6 @@
 # Lukes VoiceFoundry Project
-##Overview
+## Overview
+
 This repo is part of a coding assignment to make use of AWS Connect, Lambda and DynamoDB.
 
 **Testable Connect Phone Number: 1-877-583-0450**
@@ -7,13 +8,13 @@ This repo is part of a coding assignment to make use of AWS Connect, Lambda and 
 **NOTE:** Ones and zeros cannot be entered when testing the contact flow. The 
 code logic does not account for these scenarios and will throw an error.
 
-##The Conversion Lambda
-###Tasks
+## The Conversion Lambda
+### Tasks
 1. Create an AWS Lambda function that converts phone numbers to vanity numbers.
 2. Save the 5 best resulting numbers along with the customer's
 phone number.
 
-###Solution
+### Solution
 I chose to convert the last 4 digits of the phone numbers to vanity numbers 
 using a backtracking algorithm. While the algorithm can convert a 7 digit
 number, I kept it simple to not overload the lambda function and outputs.
@@ -30,12 +31,13 @@ algorithm that can be ran in NodeJS.
 The full solution is inside the CloudFormation template and
 can be seen in the file *vanity-number-generator-cloudformation.yaml*.
 
-##Amazon Connect Contact Flow
-###Tasks
+## Amazon Connect Contact Flow
+
+### Tasks
 1. Create a contact flow that looks at the caller's number and says the
 3 vanity possiblities that return from the lambda function. 
 
-###Solution
+### Solution
 The contact flow uses a **Store customer input** flow that prompts the 
 caller for a ten digit phone number. The input is passed to an 
 **Invoke AWS Lambda function** flow and then a **Play prompt** to read back the 
@@ -45,7 +47,7 @@ reached, the call disconnects.
 The 3 vanity numbers returned are the first 3 resulting numbers returned 
 by the algorithm.  
 
-###Instructions
+### Instructions
 1. Use the CloudFormation template to create a stack.
 2. In Amazon Connect (assuming an instance and phone number has been
 created already), select the alias link > contact flows > aws lambda > 
@@ -55,12 +57,13 @@ add the function from the list.
 created function.
 5. Associate the phone number with the imported contact flow. 
 
-##Deployment Package
-###Tasks
+## Deployment Package
+
+### Tasks
 1. Build a deployment package with CloudFormation to allow a user, or 
 assigned reviewer, to deploy the solution into their own AWS Account. 
 
-###Solution
+### Solution
 The first block of the template creates a DynamoDB table with a 
 primary and sort key. 
 
@@ -76,11 +79,11 @@ the default selections in place.
 
 **NOTE:** The solution does not contain the web app additions.
 
-##Web App
-###Tasks
+## Web App
+### Tasks
 1. Create a web app that displays the vanity numbers from the last 5 callers.
 
-###Solution
+### Solution
 I created a very simple ReactJS app that is hosted as a static website on S3. 
 A Lambda function that returns the results from the DynamoDB is wired to an 
 API Gateway GET endpoint. 
@@ -91,10 +94,10 @@ API Gateway GET endpoint.
  
  [Click here to visit the repo](https://github.com/lyaegel88/Lukes-VoiceFoundry-ReactJS-App)
 
-##Architectural Diagram
+## Architectural Diagram
 ![Architectural Diagram](cloudfoundry_diagram.png)
 
-##Final Thoughts
+## Final Thoughts
 First thing - I learned a lot over the last few days. I feel like an 
 AWS pro now!
 
