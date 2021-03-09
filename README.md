@@ -1,4 +1,4 @@
-# Lukes VoiceFoundry Project
+# Luke's VoiceFoundry Project
 ## Overview
 
 This repo is part of a coding assignment to make use of AWS Connect, Lambda and DynamoDB.
@@ -69,12 +69,12 @@ primary and sort key.
 
 The second block creates a role under the policy 
 AWSLambdaBasicExecutionRole and also creates an inline policy to all 
-access to the DynamoDB for reading/writing. 
+access to DynamoDB for reading/writing. 
 
 The last block creates a lambda function with the solution and assigns the
 newly created role to it. 
 
-The template can be uploaded through CloudFormation and leaving all 
+The template can be uploaded through CloudFormation. Leave all 
 the default selections in place. 
 
 **NOTE:** The solution does not contain the web app additions.
@@ -119,5 +119,5 @@ when it came to referencing the new role created with the template
  make a better app. 
  
  If I had more time, I would have figured out a way to add the contact flow 
- to the template. AWS Connect uses a different method for creation that I 
+ to the CloudFormation template. AWS Connect uses a different method for creation that I 
  didn't have time to learn.  
