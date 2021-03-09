@@ -5,6 +5,17 @@ This repo is part of a coding assignment to make use of AWS Connect, Lambda and 
 
 **Testable Connect Phone Number: 1-877-583-0450**
 
+**Example:** A good phone number to test with is 888-555-2273.
+
+Output:
+```javascript
+'888-555-BAPE',
+'888-555-BAQE',
+'888-555-BARE',
+'888-555-BASE',
+'888-555-CAPE'
+```
+
 **NOTE:** Ones and zeros cannot be entered when testing the contact flow. The 
 code logic does not account for these scenarios and will throw an error.
 
