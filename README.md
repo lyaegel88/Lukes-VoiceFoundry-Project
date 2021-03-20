@@ -1,6 +1,8 @@
 # Luke's VoiceFoundry Project
 ## Overview
 
+**This is no longer a working service** - it was done as part of a code assignment.
+
 This repo is part of a coding assignment to make use of AWS Connect, Lambda and DynamoDB.
 
 **Testable Connect Phone Number: 1-877-583-0450**

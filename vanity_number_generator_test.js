@@ -1,4 +1,4 @@
-let phoneNumber = 8885552273;
+let phoneNumber = 8885553353;
 
 if (typeof phoneNumber == "number"){
     phoneNumber = phoneNumber.toString();
@@ -56,6 +56,12 @@ const findTopFiveNumbers = vanityNumbers => {
     for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
         if (vowels.includes(vanityNumbers[i].charAt(1))
             && vowels.includes(vanityNumbers[i].charAt(3))){
+            filteredCombinations.push(vanityNumbers[i].toUpperCase());
+        }
+    }
+
+    for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
+        if (vowels.includes(vanityNumbers[i].charAt(1))){
             filteredCombinations.push(vanityNumbers[i].toUpperCase());
         }
     }

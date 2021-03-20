@@ -126,6 +126,12 @@ Resources:
               }
 
               for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
+                  if (vowels.includes(vanityNumbers[i].charAt(1))){
+                      filteredCombinations.push(vanityNumbers[i].toUpperCase());
+                  }
+              }
+
+              for (let i = 0; i < vanityNumbers.length && filteredCombinations.length < 5; i++) {
                   if (vowels.includes(vanityNumbers[i].charAt(3))){
                       filteredCombinations.push(vanityNumbers[i].toUpperCase());
                   }
